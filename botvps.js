@@ -131,5 +131,5 @@ client.on('message', async msg => {
 
 // INITIALIZE DO SERVIÇO
 server.listen(port, function() {
-  console.log('© Comunidade ZDG - Aplicativo rodando na porta *: ' + port);
+  console.log('Aplicativo rodando na porta *: ' + port);
 });
