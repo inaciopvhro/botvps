@@ -39,13 +39,13 @@ app.get('/', (req, res) => {
 const client = new Client({
   authStrategy: new LocalAuth({ clientId: idClient }),
   puppeteer: { headless: true,
-    //executablePath: '/usr/bin/chromium-browser',
+     executablePath: '/usr/bin/chromium-browser',
     //===================================================================================
     // CAMINHO DO CHROME PARA MAC (REMOVER O COMENTÁRIO ABAIXO)
     //executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     //===================================================================================
     // CAMINHO DO CHROME PARA LINUX (REMOVER O COMENTÁRIO ABAIXO)
-    executablePath: '/usr/bin/google-chrome-stable',
+    // executablePath: '/usr/bin/google-chrome-stable',
     //===================================================================================
     args: [
       '--no-sandbox',
