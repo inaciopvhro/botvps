@@ -59,7 +59,7 @@ client.initialize();
 // EVENTOS DE CONEXÃO EXPORTADOS PARA O INDEX.HTML VIA SOCKET
 io.on('connection', function(socket) {
   socket.emit('message', '© BOT-ZDG - Iniciado');
-  socket.emit('qr', './icon.svg');
+  socket.emit('qr', './bola vermelha.jpg');
 
 client.on('qr', (qr) => {
     console.log('QR RECEIVED', qr);
@@ -72,7 +72,7 @@ client.on('qr', (qr) => {
 client.on('ready', async () => {
   socket.emit('ready', '© BOT-ZDG Dispositivo pronto!');
   socket.emit('message', '© BOT-ZDG Dispositivo pronto!');
-  socket.emit('qr', './check.svg')
+  socket.emit('qr', './bola verde.jpg')
   console.log('© BOT-ZDG Dispositivo pronto');
   const groups = await client.getChats()
   for (const group of groups){
