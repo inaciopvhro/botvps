@@ -38,20 +38,20 @@ app.get('/', (req, res) => {
 // PARÂMETROS DO CLIENT DO WPP
 const client = new Client({
   authStrategy: new LocalAuth({ clientId: idClient }),
- // puppeteer: { headless: true,
+  puppeteer: { headless: true,
   //executablePath: '/usr/bin/google-chrome-stable',
   //executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     
-//    args: [
-//      '--no-sandbox',
-//      '--disable-setuid-sandbox',
-//      '--disable-dev-shm-usage',
-//      '--disable-accelerated-2d-canvas',
-//      '--no-first-run',
-//      '--no-zygote',
-//      '--single-process', // <- this one doesn't works in Windows
-//      '--disable-gpu'
-//    ] }
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process', // <- this one doesn't works in Windows
+      '--disable-gpu'
+    ] }
 });
 
 // INITIALIZE DO CLIENT DO WPP
