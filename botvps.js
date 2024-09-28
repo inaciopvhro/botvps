@@ -38,7 +38,7 @@ app.get('/', (req, res) => {
 // PARÂMETROS DO CLIENT DO WPP
 const client = new Client({
   authStrategy: new LocalAuth({ clientId: idClient }),
-  puppeteer: { headless: false,
+  puppeteer: { headless: true,
   //executablePath: '/usr/bin/google-chrome-stable',
   //executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     
