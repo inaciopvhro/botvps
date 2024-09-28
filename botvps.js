@@ -39,8 +39,19 @@ app.get('/', (req, res) => {
 const client = new Client({
   authStrategy: new LocalAuth({ clientId: idClient }),
   puppeteer: { headless: true,
+<<<<<<< HEAD
   executablePath: '/usr/bin/google-chrome-stable',
     
+=======
+    executablePath: '/usr/bin/chromium-browser',
+    //===================================================================================
+    // CAMINHO DO CHROME PARA MAC (REMOVER O COMENTÁRIO ABAIXO)
+    //executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    //===================================================================================
+    // CAMINHO DO CHROME PARA LINUX (REMOVER O COMENTÁRIO ABAIXO)
+    // executablePath: '/usr/bin/google-chrome-stable',
+    //===================================================================================
+>>>>>>> b38ec06e1d0d8625701852b0a708f7498019235f
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -136,5 +147,5 @@ client.on('message', async msg => {
 
 // INITIALIZE DO SERVIÇO
 server.listen(port, function() {
-  console.log('© Comunidade ZDG - Aplicativo rodando na porta *: ' + port);
+  console.log('Aplicativo rodando na porta *: ' + port);
 });
