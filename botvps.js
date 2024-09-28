@@ -41,7 +41,7 @@ const client = new Client({
   puppeteer: { headless: false,
   //executablePath: '/usr/bin/google-chrome-stable',
   //executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-  //executablePath: '/usr/bin/chromium-browser',  
+  executablePath: '/usr/bin/chromium-browser',  
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
