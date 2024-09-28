@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 const client = new Client({
   authStrategy: new LocalAuth({ clientId: idClient }),
   puppeteer: { headless: true,
-  // executablePath: '/usr/bin/google-chrome-stable',
+  executablePath: '/usr/bin/google-chrome-stable',
     
     args: [
       '--no-sandbox',
