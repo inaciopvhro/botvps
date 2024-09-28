@@ -38,10 +38,10 @@ app.get('/', (req, res) => {
 // PARÂMETROS DO CLIENT DO WPP
 const client = new Client({
   authStrategy: new LocalAuth({ clientId: idClient }),
-  puppeteer: { headless: true,
+  puppeteer: { headless: false,
   //executablePath: '/usr/bin/google-chrome-stable',
   //executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-  executablePath: '/usr/bin/chromium-browser',  
+  //executablePath: '/usr/bin/chromium-browser',  
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
