@@ -1,6 +1,6 @@
 // BACKEND DA API
 // BIBLIOTECAS UTILIZADAS PARA COMPOSIÇÃO DA API
-const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
+const { Client, LocalAuth } = require('whatsapp-web.js');
 const express = require('express');
 const socketIO = require('socket.io');
 const qrcode = require('qrcode');
@@ -39,15 +39,8 @@ app.get('/', (req, res) => {
 const client = new Client({
   authStrategy: new LocalAuth({ clientId: idClient }),
   puppeteer: { headless: true,
-    // CAMINHO DO CHROME PARA WINDOWS (REMOVER O COMENTÁRIO ABAIXO)
-    // executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-    //===================================================================================
-    // CAMINHO DO CHROME PARA MAC (REMOVER O COMENTÁRIO ABAIXO)
-    //executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-    //===================================================================================
-    // CAMINHO DO CHROME PARA LINUX (REMOVER O COMENTÁRIO ABAIXO)
-    //executablePath: '/usr/bin/google-chrome-stable',
-    //===================================================================================
+  // executablePath: '/usr/bin/google-chrome-stable',
+    
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -112,23 +105,34 @@ client.on('disconnected', (reason) => {
 });
 });
 
-
 // EVENTO DE ESCUTA DE MENSAGENS RECEBIDAS PELA API
 client.on('message', async msg => {
 
   if (msg.body === null) return;
 
-  // REMOVER MENSAGEM DE NÚMEROS NÃO AUTORIZADOS
-  if (!permissaoBot.includes(msg.author || msg.from)) {
-    try{
-      msg.delete(true)
-      client.sendMessage(msg.from, "😎 Você não tem autorização para enviar mensagens.")
-    } catch (e){
-      console.log('© Comunidade ZDG')
+  // REMOVER LINKS
+  const chat = await client.getChatById(msg.id.remote);
+  for (const participant of chat.participants) {
+    if (participant.id._serialized === msg.author && participant.isAdmin) {
+      return;
+    }
+    if ((participant.id._serialized === msg.author && !participant.isAdmin) &&
+        (msg.body.toLowerCase().includes("www")
+          || msg.body.toLowerCase().includes("http")
+          || msg.body.toLowerCase().includes(".br")
+          || msg.body.toLowerCase().includes("://")
+          || msg.body.toLowerCase().includes(".com.br")
+          || msg.body.toLowerCase().includes(".com"))){
+      try{
+        await msg.delete(true)
+        await client.sendMessage(msg.from, "😎 Para enviar links, solicite autorização do admin.")
+      } catch (e){
+        console.log('© Comunidade ZDG')
+      }
     }
   }
-});
 
+});
 
 // INITIALIZE DO SERVIÇO
 server.listen(port, function() {
