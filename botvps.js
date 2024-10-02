@@ -12,7 +12,7 @@ const server = http.createServer(app);
 const io = socketIO(server);
 
 // PORTA ONDE O SERVIÇO SERÁ INICIADO
-const port = 8001;
+const port = 3100;
 const idClient = 'BotZeus';
 
 // NUMEROS AUTORIZADOS
@@ -57,6 +57,47 @@ const client = new Client({
 // INITIALIZE DO CLIENT DO WPP
 client.initialize();
 
+function delay(t, v) {
+  return new Promise(function(resolve) {
+      setTimeout(resolve.bind(null, v), t)
+  });
+};
+
+const createConnection = async () => {
+	return await mysql.createConnection({
+		host: '141.136.42.73',
+		user: 'phpmyadmin',
+		password: 'Inacio2628',
+		database: 'phpmyadmin'
+	});
+};
+
+const getUser = async (msgfom) => {
+	const connection = await createConnection();
+	const [rows] = await connection.execute('SELECT contato FROM contatos WHERE contato = ?', [msgfom]);
+  delay(1000).then(async function() {
+		await connection.end();
+		delay(500).then(async function() {
+			connection.destroy();
+		});
+	});
+	if (rows.length > 0) return true;
+	return false;
+};
+
+const setUser = async (msgfom, nome) => {
+	const connection = await createConnection();
+	const [rows] = await connection.execute('INSERT INTO `contatos` (`id`, `contato`, `nome`) VALUES (NULL, ?, ?)', [msgfom, nome]);
+  delay(1000).then(async function() {
+		await connection.end();
+		delay(500).then(async function() {
+			connection.destroy();
+		});
+	});
+	if (rows.length > 0) return rows[0].contato;
+	return false;
+};
+
 // EVENTOS DE CONEXÃO EXPORTADOS PARA O INDEX.HTML VIA SOCKET
 io.on('connection', function(socket) {
   socket.emit('message', '© BOT-Zeus - Iniciado');
@@ -66,7 +107,7 @@ client.on('qr', (qr) => {
     console.log('QR RECEIVED', qr);
     qrcode.toDataURL(qr, (err, url) => {
       socket.emit('qr', url);
-      socket.emit('message', '© BOT-Zeus QRCode recebido, aponte a câmera  seu celular!');
+      socket.emit('message', '© BOT-Zeus QRCode recebido, aponte a câmera do seu celular!');
     });
 });
 
@@ -132,8 +173,206 @@ client.on('message', async msg => {
       }
     }
   }
+});
+client.on('message', async msg => {
+  if (msg.body === null) return;
+  // COMANDO BOT
+  if (msg.body.startsWith('!ass ')) {
+    // MUDAR TITULO DO GRUPO
+    if (!permissaoBot.includes(msg.author || msg.from)) return msg.reply("Você não pode enviar esse comando.");
+    let newSubject = msg.body.slice(5);
+    client.getChats().then(chats => {
+      const groups = chats.filter(chat => chat.isGroup);
+      if (groups.length == 0) {
+        msg.reply('Você não tem grupos.');
+      }
+      else {
+        groups.forEach((group, i) => {
+          setTimeout(function() {
+            try{
+              group.setSubject(newSubject);
+              console.log('Assunto alterado para o grupo: ' + group.name);
+            } catch(e){
+              console.log('Erro ao alterar assunto do grupo: ' + group.name);
+            }
+          },1000 + Math.floor(Math.random() * 4000) * (i+1) )
+        });
+      }
+    });
+  }
+  if (msg.body === '!pdr'){
+    const chat = await client.getChatById(msg.id.remote);
+    const text = (await msg.getQuotedMessage()).body;
+    let mentions = [];
+    for(let participant of chat.participants) {
+      if (participant.id._serialized === msg.author && !participant.isAdmin) 
+        return msg.reply("Você não pode enviar esse comando.");
+      try{
+        const contact = await client.getContactById(participant.id._serialized);
+        mentions.push(contact);
+        } catch (e)
+          {console.log('© Bot Inacio: '+e);}
+      }
+      console.log(text)
+      await chat.sendMessage(text, { mentions: mentions });
+  }
+  else if (msg.body.startsWith('!desc ')) {
+    // MUDAR DESCRICAO DO GRUPO
+    if (!permissaoBot.includes(msg.author || msg.from)) return msg.reply("Você não pode enviar esse comando.");
+    let newDescription = msg.body.slice(6);
+    client.getChats().then(chats => {
+      const groups = chats.filter(chat => chat.isGroup);
+      if (groups.length == 0) {
+        msg.reply('Você não tem grupos.');
+      }
+      else {
+        groups.forEach((group, i) => {
+          setTimeout(function() {
+            try{
+              group.setDescription(newDescription);
+              console.log('Descrição alterada para o grupo: ' + group.name);
+            } catch(e){
+              console.log('Erro ao alterar descrição do grupo: ' + group.name);
+            }
+          },1000 + Math.floor(Math.random() * 4000) * (i+1) )
+        });
+      }
+    });
+  }
+  else if (msg.body.startsWith('!ban ')) {
+  // BAN USUARIO PIRATA
+  if (!permissaoBot.includes(msg.author || msg.from)) return msg.reply("Você não pode enviar esse comando.");
+  let usuarioPirata = msg.body.slice(5);
+  client.getChats().then(chats => {
+      const groups = chats.filter(chat => chat.isGroup);
+      if (groups.length == 0) {
+        msg.reply('Você não tem grupos.');
+      }
+      else {
+        groups.forEach((group, i) => {
+          setTimeout(async function() {
+            try {
+              await group.removeParticipants([usuarioPirata + `@c.us`]);
+              console.log('Participante ' + usuarioPirata + ' banido do grupo: ' + group.name);
+            } catch(e){
+              console.log('Participante não faz parte do grupo: ' + group.name);
+            }
+          },1000 + Math.floor(Math.random() * 4000) * (i+1) )
+        });
+      }
+    });
+  }
+  else if (msg.body.startsWith('!fcgr')) {
+    // FECHAR TODOS OS GRUPOS QUE O BOT É ADMIN;
+    if (!permissaoBot.includes(msg.author || msg.from)) return msg.reply("Você não pode enviar esse comando.");
+    client.getChats().then(chats => {
+      const groups = chats.filter(chat => chat.isGroup);
+      if (groups.length == 0) {
+        msg.reply('Você não tem grupos.');
+      }
+      else {
+        groups.forEach((group, i) => {
+          setTimeout(function() {
+            try {
+              group.setMessagesAdminsOnly(true);
+              console.log('Grupo fechado: ' + group.name);
+            } catch(e){
+              console.log('Erro ao fechar grupo: ' + group.name);
+            }
+          },1000 + Math.floor(Math.random() * 4000) * (i+1) )
+        });
+      }
+    });
+  }
+  else if (msg.body.startsWith('!abrgr')) {
+  //ABRIR TODOS OS GRUPOS QUE O BOT É ADMIN;
+  if (!permissaoBot.includes(msg.author || msg.from)) return msg.reply("Você não pode enviar esse comando.");
+  client.getChats().then(chats => {
+    const groups = chats.filter(chat => chat.isGroup);
+      if (groups.length == 0) {
+        msg.reply('Você não tem grupos.');
+      }
+      else {
+        groups.forEach((group, i) => {
+          setTimeout(function() {
+            try {
+              group.setMessagesAdminsOnly(false);
+              console.log('Grupo aberto: ' + group.name);
+            } catch(e){
+              console.log('Erro ao abrir grupo: ' + group.name);
+            }
+          },1000 + Math.floor(Math.random() * 4000) * (i+1) )
+        });
+      }
+    });
+  }
+});
+// EVENTO DE NOVO USUÁRIO EM GRUPO
+client.on('group_join', async (notification) => {
+  // LISTAR GRUPOS
+  const groups = await client.getChats()
+  console.log('-----------------------------\nBOT-Zeus Grupos atualizados:\n-----------------------------')
+  try{
+    for (const group of groups){
+      if(group.id.server.includes('g.us')){
+        console.log('Nome: ' + group.name + ' - ID: ' + group.id._serialized.replace(/\D/g,''))
+      }
+    }
+  } catch (e){
+    console.log('© Inacio Informatica')
+  }
+
+  // GRAVAR USUÁRIOS DO GRUPOS
+  try{
+    const contact = await client.getContactById(notification.id.participant)
+    const nomeContato = (contact.pushname === undefined) ? contact.verifiedName : contact.pushname;
+    const user = notification.id.participant.replace(/\D/g, '');
+    const getUserFrom = await getUser(user);
+
+    if (getUserFrom === false) {
+      await setUser(user, nomeContato);
+      console.log('Usuário armazenado: ' + user + ' - ' + nomeContato)
+    }
+
+    if (getUserFrom !== false) {
+      console.log('Usuário já foi armazenado')
+    }
+  }
+  catch(e){
+    console.log('Não foi possível armazenar o usuário' + e)
+  }  
+
+  // MENSAGEM DE SAUDAÇÃO
+  if (notification.id.remote) {
+    const contact = await client.getContactById(notification.id.participant)
+    const texto1 = ', tudo bem? Seja bem vindo ao grupo de dicas e estrategias de jogos. \n\n👉 *Dicas*: Dicas das melhores plataformas\n👉 *Horarios Pagantes*: Sempre informando os melhores horarios\n\nPs.: 🔞 Proibidos para menores de 18 anos\n\nJOGUE COM RESPONSABILIDADE\n\nBoa Sorte';
+    const textos = [texto1];
+
+    const mensagemTexto = `@${contact.number}!` + textos;
+    const chat = await client.getChatById(notification.id.remote);
+
+    console.log('Grupo: ' + notification.id.remote + ' - Mensagem: ' + mensagemTexto);
+
+    delay(1000).then(async function() {
+      try {
+        chat.sendStateTyping();
+      } catch(e){
+        console.log('© Inacio Informatica: '+e)
+      }
+    });
+
+    delay(5000).then(async function() {
+      try{
+        client.sendMessage(notification.id.remote, mensagemTexto, { mentions: [contact] });
+        chat.clearState();
+      } catch(e){
+        console.log('© Comunidade ZDG')
+      }
+    });
+  }
 
 });
+
 
 // INITIALIZE DO SERVIÇO
 server.listen(port, function() {
