@@ -372,8 +372,6 @@ client.on('group_join', async (notification) => {
   }
 
 });
-
-
 // INITIALIZE DO SERVIÇO
 server.listen(port, function() {
   console.log('© Bot Zeus - Aplicativo rodando na porta *: ' + port);
