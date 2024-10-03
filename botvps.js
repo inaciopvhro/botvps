@@ -34,14 +34,13 @@ app.get('/', (req, res) => {
   });
 });
 
-
 // PARÂMETROS DO CLIENT DO WPP
 const client = new Client({
   authStrategy: new LocalAuth({ clientId: idClient }),
-  puppeteer: { headless: false,
+  puppeteer: { headless: true,
   //executablePath: '/usr/bin/google-chrome-stable',
   //executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-  executablePath: '/usr/bin/chromium-browser',  
+  //executablePath: '/usr/bin/chromium-browser',  
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -200,22 +199,6 @@ client.on('message', async msg => {
       }
     });
   }
-  if (msg.body === '!pdr'){
-    const chat = await client.getChatById(msg.id.remote);
-    const text = (await msg.getQuotedMessage()).body;
-    let mentions = [];
-    for(let participant of chat.participants) {
-      if (participant.id._serialized === msg.author && !participant.isAdmin) 
-        return msg.reply("Você não pode enviar esse comando.");
-      try{
-        const contact = await client.getContactById(participant.id._serialized);
-        mentions.push(contact);
-        } catch (e)
-          {console.log('© Bot Inacio: '+e);}
-      }
-      console.log(text)
-      await chat.sendMessage(text, { mentions: mentions });
-  }
   else if (msg.body.startsWith('!desc ')) {
     // MUDAR DESCRICAO DO GRUPO
     if (!permissaoBot.includes(msg.author || msg.from)) return msg.reply("Você não pode enviar esse comando.");
@@ -305,6 +288,24 @@ client.on('message', async msg => {
         });
       }
     });
+  }
+});
+client.on('message_create', async msg => {
+  if (msg.body === '!pdr'){
+    const chat = await client.getChatById(msg.id.remote);
+    const text = (await msg.getQuotedMessage()).body;
+    let mentions = [];
+    for(let participant of chat.participants) {
+      if (participant.id._serialized === msg.author && !participant.isAdmin) 
+        return msg.reply("Você não pode enviar esse comando.");
+      try{
+        const contact = await client.getContactById(participant.id._serialized);
+        mentions.push(contact);
+        } catch (e)
+          {console.log('© Bot Inacio: '+e);}
+      }
+      console.log(text)
+      await chat.sendMessage(text, { mentions: mentions });
   }
 });
 // EVENTO DE NOVO USUÁRIO EM GRUPO
