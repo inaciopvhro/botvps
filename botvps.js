@@ -98,6 +98,7 @@ const setUser = async (msgfom, nome) => {
 };
 
 // EVENTOS DE CONEXÃO EXPORTADOS PARA O INDEX.HTML VIA SOCKET
+
 io.on('connection', function(socket) {
   socket.emit('message', '© BOT-Zeus - Iniciado');
   socket.emit('qr', './bolavermelha.jpg');
@@ -124,7 +125,7 @@ client.on('ready', async () => {
   }
 });
 
-client.on('authenticated', () => {
+client.on('authenticated', (session) => {
     socket.emit('authenticated', '© BOT-Zeus Autenticado!');
     socket.emit('message', '© BOT-Zeus Autenticado!');
     console.log('© BOT-Zeus Autenticado');
@@ -137,6 +138,7 @@ client.on('auth_failure', function() {
 
 client.on('change_state', state => {
   console.log('© BOT-Zeus Status de conexão: ', state );
+  socket.emit('message', '© BOT-Zeus Falha na autenticação, reiniciando...');
 });
 
 client.on('disconnected', (reason) => {
@@ -346,7 +348,7 @@ client.on('group_join', async (notification) => {
   // MENSAGEM DE SAUDAÇÃO
   if (notification.id.remote) {
     const contact = await client.getContactById(notification.id.participant)
-    const texto1 = ', tudo bem? Seja bem vindo ao grupo de dicas e estrategias de jogos. \n\n👉 *Dicas*: Dicas das melhores plataformas\n👉 *Horarios Pagantes*: Sempre informando os melhores horarios\n\nPs.: 🔞 Proibidos para menores de 18 anos\n\nJOGUE COM RESPONSABILIDADE\n\nBoa Sorte';
+    const texto1 = ', tudo bem? Seja bem vindo ao grupo *DICAS DAS GAROTAS*🎰💕🍀\n\n👉 *Se vocês estão procurando um grupo que divulga plataformas confiáveis estão no lugar certo…*\n\n📌Aqui postamos plataformas com gerentes confiáveis, horários, link de porcentagem, dicas de estratégias e sorteios de bancas\n\nQuem não quiser participar pode estar saindo sem problemas 🫶🏼\n\n📌*O INTUITO AQUI É VÊ VOCÊS FAZENDO GRANDES GANHOS*🥰\n\n🔞 Proibido para menores de 18 anos\nJOGUE COM RESPONSABILIDADE\nBoa Sorte';
     const textos = [texto1];
 
     const mensagemTexto = `@${contact.number}!` + textos;
@@ -367,7 +369,7 @@ client.on('group_join', async (notification) => {
         client.sendMessage(notification.id.remote, mensagemTexto, { mentions: [contact] });
         chat.clearState();
       } catch(e){
-        console.log('© Comunidade ZDG')
+        console.log('© Inacio Informatica')
       }
     });
   }
