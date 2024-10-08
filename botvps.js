@@ -16,7 +16,7 @@ const port = 3100;
 const idClient = 'BotZeus';
 
 // NUMEROS AUTORIZADOS
-const permissaoBot = ["556992102573@c.us"];
+const permissaoBot = ["556992102573@c.us","556993405268@c.us","556992762113@c.us","556993003146@c.us"];
 
 // SERVIÇO EXPRESS
 app.use(express.json());
@@ -36,7 +36,7 @@ const client = new Client({
   puppeteer: { headless: true,
   //executablePath: '/usr/bin/google-chrome-stable',
   //executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-  //executablePath: '/usr/bin/chromium-browser',  
+  executablePath: '/usr/bin/chromium-browser',  
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
