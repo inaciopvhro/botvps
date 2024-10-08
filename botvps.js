@@ -20,12 +20,8 @@ const permissaoBot = ["556992102573@c.us"];
 
 // SERVIÇO EXPRESS
 app.use(express.json());
-app.use(express.urlencoded({
-extended: true
-}));
-app.use(fileUpload({
-debug: true
-}));
+app.use(express.urlencoded({extended: true}));
+app.use(fileUpload({debug: true}));
 app.use("/", express.static(__dirname + "/"))
 
 app.get('/', (req, res) => {
@@ -40,7 +36,7 @@ const client = new Client({
   puppeteer: { headless: true,
   //executablePath: '/usr/bin/google-chrome-stable',
   //executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-  executablePath: '/usr/bin/chromium-browser',  
+  //executablePath: '/usr/bin/chromium-browser',  
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -56,6 +52,56 @@ const client = new Client({
 // INITIALIZE DO CLIENT DO WPP
 client.initialize();
 
+// EVENTOS DE CONEXÃO EXPORTADOS PARA O INDEX.HTML VIA SOCKET
+io.on('connection', function(socket) {
+  socket.emit('message', '© BOT-Zeus - Iniciado');
+  socket.emit('qr', './bolavermelha.jpg');
+
+client.on('qr', (qr) => {
+    console.log('QR RECEIVED', qr);
+    qrcode.toDataURL(qr, (err, url) => {
+      socket.emit('qr', url);
+      socket.emit('message', '© BOT-Zeus QRCode recebido, aponte a câmera do seu celular!');
+    });
+});
+
+client.on('authenticated', (session) => {
+    socket.emit('authenticated', '© BOT-Zeus Autenticado!');
+    socket.emit('message', '© BOT-Zeus Autenticado!');
+    console.log('© BOT-Zeus Autenticado');
+});
+
+client.on('auth_failure', function() {
+    socket.emit('message', '© BOT-Zeus Falha na autenticação, reiniciando...');
+    console.error('© BOT-Zeus Falha na autenticação');
+});
+
+client.on('change_state', state => {
+  console.log('© BOT-Zeus Status de conexão: ', state );
+  socket.emit('message', '© BOT-Zeus Status de conexão: ', state);
+});
+
+client.on('disconnected', (reason) => {
+  socket.emit('message', '© BOT-Zeus Cliente desconectado!');
+  console.log('© BOT-Zeus Cliente desconectado', reason);
+  client.initialize();
+});
+
+client.on('ready', async () => {
+  socket.emit('ready', '© BOT-Zeus Dispositivo pronto!');
+  socket.emit('message', '© BOT-Zeus Dispositivo pronto!');
+  socket.emit('qr', './bolaverde.jpg')
+  console.log('© BOT-Zeus Dispositivo pronto');
+  const groups = await client.getChats()
+  for (const group of groups){
+    if(group.id.server.includes('g.us')){
+      socket.emit('message', 'Nome: ' + group.name + ' - ID: ' + group.id._serialized.split('@')[0]);
+     console.log('Nome: ' + group.name + ' - ID: ' + group.id._serialized.split('@')[0])
+    }
+  }
+});
+});
+
 function delay(t, v) {
   return new Promise(function(resolve) {
       setTimeout(resolve.bind(null, v), t)
@@ -65,9 +111,9 @@ function delay(t, v) {
 const createConnection = async () => {
 	return await mysql.createConnection({
 		host: '141.136.42.73',
-		user: 'phpmyadmin',
-		password: 'Inacio2628',
-		database: 'phpmyadmin'
+		user: 'root',
+		password: 'Inacio@2628',
+		database: 'BancoBot'
 	});
 };
 
@@ -97,62 +143,9 @@ const setUser = async (msgfom, nome) => {
 	return false;
 };
 
-// EVENTOS DE CONEXÃO EXPORTADOS PARA O INDEX.HTML VIA SOCKET
-
-io.on('connection', function(socket) {
-  socket.emit('message', '© BOT-Zeus - Iniciado');
-  socket.emit('qr', './bolavermelha.jpg');
-
-client.on('qr', (qr) => {
-    console.log('QR RECEIVED', qr);
-    qrcode.toDataURL(qr, (err, url) => {
-      socket.emit('qr', url);
-      socket.emit('message', '© BOT-Zeus QRCode recebido, aponte a câmera do seu celular!');
-    });
-});
-
-client.on('ready', async () => {
-  socket.emit('ready', '© BOT-Zeus Dispositivo pronto!');
-  socket.emit('message', '© BOT-Zeus Dispositivo pronto!');
-  socket.emit('qr', './bolaverde.jpg')
-  console.log('© BOT-Zeus Dispositivo pronto');
-  const groups = await client.getChats()
-  for (const group of groups){
-    if(group.id.server.includes('g.us')){
-      socket.emit('message', 'Nome: ' + group.name + ' - ID: ' + group.id._serialized.split('@')[0]);
-      console.log('Nome: ' + group.name + ' - ID: ' + group.id._serialized.split('@')[0])
-    }
-  }
-});
-
-client.on('authenticated', (session) => {
-    socket.emit('authenticated', '© BOT-Zeus Autenticado!');
-    socket.emit('message', '© BOT-Zeus Autenticado!');
-    console.log('© BOT-Zeus Autenticado');
-});
-
-client.on('auth_failure', function() {
-    socket.emit('message', '© BOT-Zeus Falha na autenticação, reiniciando...');
-    console.error('© BOT-Zeus Falha na autenticação');
-});
-
-client.on('change_state', state => {
-  console.log('© BOT-Zeus Status de conexão: ', state );
-  socket.emit('message', '© BOT-Zeus Falha na autenticação, reiniciando...');
-});
-
-client.on('disconnected', (reason) => {
-  socket.emit('message', '© BOT-Zeus Cliente desconectado!');
-  console.log('© BOT-Zeus Cliente desconectado', reason);
-  client.initialize();
-});
-});
-
 // EVENTO DE ESCUTA DE MENSAGENS RECEBIDAS PELA API
 client.on('message', async msg => {
-
   if (msg.body === null) return;
-
   // REMOVER LINKS
   const chat = await client.getChatById(msg.id.remote);
   for (const participant of chat.participants) {
@@ -162,13 +155,14 @@ client.on('message', async msg => {
     if ((participant.id._serialized === msg.author && !participant.isAdmin) &&
         (msg.body.toLowerCase().includes("www")
           || msg.body.toLowerCase().includes("http")
+          || msg.body.toLowerCase().includes("https")
           || msg.body.toLowerCase().includes(".br")
           || msg.body.toLowerCase().includes("://")
           || msg.body.toLowerCase().includes(".com.br")
           || msg.body.toLowerCase().includes(".com"))){
       try{
         await msg.delete(true)
-        await client.sendMessage(msg.from, "😎 link não permitido")
+        await client.sendMessage(msg.from, "🤚🛑 link não autorizado 🛑🤚")
       } catch (e){
         console.log('© Inácio Informatica')
       }
@@ -293,23 +287,16 @@ client.on('message', async msg => {
   }
 });
 client.on('message_create', async msg => {
-  if (msg.body === '!pdr'){
+  if (msg.body === null) return;
+  if (msg.body === '!pdr' && msg.hasQuotedMsg) {
+    const quotedMsg = await msg.getQuotedMessage();
     const chat = await client.getChatById(msg.id.remote);
-    const text = (await msg.getQuotedMessage()).body;
-    let mentions = [];
-    for(let participant of chat.participants) {
-      if (participant.id._serialized === msg.author && !participant.isAdmin) 
-        return msg.reply("Você não pode enviar esse comando.");
-      try{
-        const contact = await client.getContactById(participant.id._serialized);
-        mentions.push(contact);
-        } catch (e)
-          {console.log('© Bot Inacio: '+e);}
-      }
-      console.log(text)
-      await chat.sendMessage(text, { mentions: mentions });
-  }
-});
+    if (quotedMsg.hasMedia) {
+      const attachmentData = await quotedMsg.downloadMedia();
+      await chat.sendMessage(msg.from, attachmentData, { caption: 'Here\'s your requested media.' });
+    }     
+    }
+  });
 // EVENTO DE NOVO USUÁRIO EM GRUPO
 client.on('group_join', async (notification) => {
   // LISTAR GRUPOS

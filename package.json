@@ -1,7 +1,7 @@
 {
-    "name": "bot-zdg",
+    "name": "bot-zeus",
     "version": "1.0.0",
-    "description": "bot-zdg: based on Whatsapp API",
+    "description": "bot-zeus: baseado em Whatsapp API",
     "main": "app.js",
     "scripts": {
       "start": "node .\botzdg_typebot_stop.js",
