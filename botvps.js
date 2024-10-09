@@ -287,16 +287,23 @@ client.on('message', async msg => {
   }
 });
 client.on('message_create', async msg => {
-  if (msg.body === null) return;
-  if (msg.body === '!pdr' && msg.hasQuotedMsg) {
-    const quotedMsg = await msg.getQuotedMessage();
+  if (msg.body === '!pdr'){
     const chat = await client.getChatById(msg.id.remote);
-    if (quotedMsg.hasMedia) {
-      const attachmentData = await quotedMsg.downloadMedia();
-      await chat.sendMessage(msg.from, attachmentData, { caption: 'Here\'s your requested media.' });
-    }     
-    }
-  });
+    const text = (await msg.getQuotedMessage()).body;
+    let mentions = [];
+    for(let participant of chat.participants) {
+      if (participant.id._serialized === msg.author && !participant.isAdmin) 
+        return msg.reply("Você não pode enviar esse comando.");
+      try{
+        const contact = await client.getContactById(participant.id._serialized);
+        mentions.push(contact);
+        } catch (e)
+          {console.log('© Bot Inacio: '+e);}
+      }
+      console.log(text)
+      await chat.sendMessage(text, { mentions: mentions });
+  }
+});
 // EVENTO DE NOVO USUÁRIO EM GRUPO
 client.on('group_join', async (notification) => {
   // LISTAR GRUPOS
