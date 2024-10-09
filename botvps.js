@@ -10,6 +10,7 @@ const { body, validationResult } = require('express-validator');
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
+const mysql = require('mysql2/promise');
 
 // PORTA ONDE O SERVIÇO SERÁ INICIADO
 const port = 3100;
@@ -17,6 +18,47 @@ const idClient = 'BotZeus';
 
 // NUMEROS AUTORIZADOS
 const permissaoBot = ["556992102573@c.us","556993405268@c.us","556992762113@c.us","556993003146@c.us"];
+
+function delay(t, v) {
+  return new Promise(function(resolve) {
+      setTimeout(resolve.bind(null, v), t)
+  });
+};
+
+const createConnection = async () => {
+	return await mysql.createConnection({
+		host: '141.136.42.73',
+		user: 'root',
+		password: 'Inacio@2628',
+		database: 'BancoBot'
+	});
+};
+
+const getUser = async (msgfom) => {
+	const connection = await createConnection();
+	const [rows] = await connection.execute('SELECT contato FROM contatos WHERE contato = ?', [msgfom]);
+  delay(1000).then(async function() {
+		await connection.end();
+		delay(500).then(async function() {
+			connection.destroy();
+		});
+	});
+	if (rows.length > 0) return true;
+	return false;
+};
+
+const setUser = async (msgfom, nome) => {
+	const connection = await createConnection();
+	const [rows] = await connection.execute('INSERT INTO `contatos` (`id`, `contato`, `nome`) VALUES (NULL, ?, ?)', [msgfom, nome]);
+  delay(1000).then(async function() {
+		await connection.end();
+		delay(500).then(async function() {
+			connection.destroy();
+		});
+	});
+	if (rows.length > 0) return rows[0].contato;
+	return false;
+};
 
 // SERVIÇO EXPRESS
 app.use(express.json());
@@ -101,47 +143,6 @@ client.on('ready', async () => {
   }
 });
 });
-
-function delay(t, v) {
-  return new Promise(function(resolve) {
-      setTimeout(resolve.bind(null, v), t)
-  });
-};
-
-const createConnection = async () => {
-	return await mysql.createConnection({
-		host: '141.136.42.73',
-		user: 'root',
-		password: 'Inacio@2628',
-		database: 'BancoBot'
-	});
-};
-
-const getUser = async (msgfom) => {
-	const connection = await createConnection();
-	const [rows] = await connection.execute('SELECT contato FROM contatos WHERE contato = ?', [msgfom]);
-  delay(1000).then(async function() {
-		await connection.end();
-		delay(500).then(async function() {
-			connection.destroy();
-		});
-	});
-	if (rows.length > 0) return true;
-	return false;
-};
-
-const setUser = async (msgfom, nome) => {
-	const connection = await createConnection();
-	const [rows] = await connection.execute('INSERT INTO `contatos` (`id`, `contato`, `nome`) VALUES (NULL, ?, ?)', [msgfom, nome]);
-  delay(1000).then(async function() {
-		await connection.end();
-		delay(500).then(async function() {
-			connection.destroy();
-		});
-	});
-	if (rows.length > 0) return rows[0].contato;
-	return false;
-};
 
 // EVENTO DE ESCUTA DE MENSAGENS RECEBIDAS PELA API
 client.on('message', async msg => {
